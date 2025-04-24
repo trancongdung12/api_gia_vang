@@ -12,5 +12,15 @@
         "dest": "src/main.ts",
         "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
       }
+    ],
+    "crons": [
+      {
+        "path": "/trigger-update",
+        "schedule": "30 9 * * *"
+      },
+      {
+        "path": "/trigger-update",
+        "schedule": "30 17 * * *"
+      }
     ]
   } 

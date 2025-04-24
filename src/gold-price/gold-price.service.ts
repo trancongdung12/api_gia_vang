@@ -4,8 +4,8 @@ import { TelegramService } from '../telegram/telegram.service';
 
 export interface GoldPrice {
   name: string;
-  type: string;
-  purity: string;
+  type?: string;
+  purity?: string;
   buyPrice: number;
   sellPrice: number;
   datetime: string;
@@ -14,45 +14,32 @@ export interface GoldPrice {
 @Injectable()
 export class GoldPriceService {
   private readonly logger = new Logger(GoldPriceService.name);
-  private readonly apiUrl = 'http://api.btmc.vn/api/BTMCAPI/getpricebtmc?key=3kd8ub1llcg9t45hnoh8hmn7t5kc2v';
+  private readonly apiUrl = 'https://edge-api.pnj.io/ecom-frontend/v1/get-gold-price?zone=00';
   private lastDatetime: string = '';
 
   constructor(private readonly telegramService: TelegramService) {}
 
   async fetchGoldPrices(): Promise<GoldPrice[]> {
     try {
-      this.logger.log('Fetching gold prices...');
+      this.logger.log('Fetching gold prices from PNJ API...');
       const response = await axios.get(this.apiUrl);
-      const data = response.data.DataList.Data;
+      const items = response.data.data;
       
       const goldPrices: GoldPrice[] = [];
       
-      for (const item of data) {
-        // Extract row number
-        const rowNumber = item['@row'];
-        
-        // Use row number to construct the correct property names
-        const name = item[`@n_${rowNumber}`];
-        const type = item[`@k_${rowNumber}`];
-        const purity = item[`@h_${rowNumber}`];
-        const buyPrice = parseInt(item[`@pb_${rowNumber}`], 10);
-        const sellPrice = parseInt(item[`@ps_${rowNumber}`], 10);
-        const datetime = item[`@d_${rowNumber}`];
-        
-        // Only include items where name contains "NHẪN"
-        if (name && type && purity && name.includes('NHẪN')) {
+      for (const item of items) {
+        // Only include items where name contains "Nhẫn Trơn"
+        if (item.tensp && item.tensp.includes('Nhẫn Trơn')) {
           goldPrices.push({
-            name,
-            type,
-            purity,
-            buyPrice,
-            sellPrice,
-            datetime,
+            name: item.tensp,
+            buyPrice: item.giamua,
+            sellPrice: item.giaban,
+            datetime: item.createDate,
           });
         }
       }
       
-      this.logger.log(`Found ${goldPrices.length} gold ring products`);
+      this.logger.log(`Found ${goldPrices.length} gold ring products from PNJ`);
       return goldPrices;
     } catch (error) {
       this.logger.error(`Error fetching gold prices: ${error.message}`);
@@ -74,11 +61,8 @@ export class GoldPriceService {
           // Update the last datetime
           this.lastDatetime = mostRecentDatetime;
           
-          // Filter out duplicates (by name) to only get the latest prices
-          const uniquePrices = this.getUniquePrices(goldPrices);
-          
           // Send the prices to Telegram
-          await this.telegramService.sendGoldPrices(uniquePrices);
+          await this.telegramService.sendGoldPrices(goldPrices);
           this.logger.log('Gold prices sent to Telegram successfully');
         } else {
           this.logger.log(`No price changes detected. Last update: ${this.lastDatetime}`);
@@ -90,17 +74,6 @@ export class GoldPriceService {
       this.logger.error(`Failed to get and send gold prices: ${error.message}`);
     }
   }
-
-  private getUniquePrices(prices: GoldPrice[]): GoldPrice[] {
-    // Use a Map to keep only the latest entry for each unique name
-    const uniquePricesMap = new Map<string, GoldPrice>();
-    
-    for (const price of prices) {
-      uniquePricesMap.set(price.name, price);
-    }
-    
-    return Array.from(uniquePricesMap.values());
-  }
   
   private getMostRecentDatetime(prices: GoldPrice[]): string {
     // If no prices, return empty string
@@ -110,7 +83,7 @@ export class GoldPriceService {
     
     // Convert the datetime strings to Date objects for comparison
     const parseDatetime = (dateStr: string): Date => {
-      // Expected format: 24/04/2025 09:03
+      // Expected format: 24/04/2025 09:02
       const [datePart, timePart] = dateStr.split(' ');
       const [day, month, year] = datePart.split('/');
       const [hours, minutes] = timePart.split(':');

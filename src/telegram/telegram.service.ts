@@ -60,16 +60,17 @@ export class TelegramService {
     
     for (const price of goldPrices) {
       message += `<b>${price.name}</b>\n`;
+      
       message += `Giá mua: ${this.formatCurrency(price.buyPrice)} VND\n`;
       
       if (price.sellPrice > 0) {
         message += `Giá bán: ${this.formatCurrency(price.sellPrice)} VND\n`;
       }
-      message += `Loại: ${price.type} - Độ tinh khiết: ${price.purity}\n`;
+      
       message += `Thời gian cập nhật: ${price.datetime}\n\n`;
     }
     
-    message += '<i>Data provided by BTMC</i>';
+    message += '<i>Data provided by PNJ Gold</i>';
     return message;
   }
 

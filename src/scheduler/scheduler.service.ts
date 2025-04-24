@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { GoldPriceService } from '../gold-price/gold-price.service';
 
 @Injectable()
@@ -8,9 +8,17 @@ export class SchedulerService {
 
   constructor(private readonly goldPriceService: GoldPriceService) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
-  async handleGoldPriceUpdate() {
-    this.logger.log('Starting hourly gold price update');
+  // Run at 9:30 AM
+  @Cron('30 9 * * *')
+  async handleMorningGoldPriceUpdate() {
+    this.logger.log('Starting morning gold price update (9:30 AM)');
+    await this.goldPriceService.getAndSendGoldPrices();
+  }
+
+  // Run at 5:30 PM
+  @Cron('30 17 * * *')
+  async handleEveningGoldPriceUpdate() {
+    this.logger.log('Starting evening gold price update (5:30 PM)');
     await this.goldPriceService.getAndSendGoldPrices();
   }
 
