@@ -1,7 +1,6 @@
 # Deploying to Vercel
 
 
-## Prerequisites
 
 1. A [Vercel account](https://vercel.com/signup)
 2. [Vercel CLI](https://vercel.com/download) installed
