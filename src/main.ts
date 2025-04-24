@@ -12,11 +12,13 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   
+  // Enable CORS for Vercel deployment
+  app.enableCors();
+  
   // Get port from environment variable or use default 3000
   const port = process.env.PORT || 3000;
   
   await app.listen(port);
   logger.log(`Application running on port ${port}`);
-  logger.log('Gold price scheduler has been initialized');
 }
 bootstrap();

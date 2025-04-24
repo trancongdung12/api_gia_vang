@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+.env
+.env.*
+README.md
+TELEGRAM_SETUP.md
+get-group-id.md
+setup-env.sh 
