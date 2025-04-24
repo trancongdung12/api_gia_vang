@@ -1,6 +1,5 @@
 # Deploying to Vercel
 
-This guide explains how to deploy your Gold Price Tracker application to Vercel.
 
 ## Prerequisites
 
